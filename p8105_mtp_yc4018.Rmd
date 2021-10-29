@@ -31,6 +31,7 @@ options(
 scale_colour_discrete = scale_colour_viridis_d
 scale_fill_discrete = scale_fill_viridis_d
 ```
+
 1. load, clean, and tidy the mtp_df data
 ```{r}
 mtp_df = readxl::read_excel("./data/p8105_mtp_data.xlsx", range = "A9:I1230") %>%  #read the table without header information
@@ -43,20 +44,19 @@ mtp_df = readxl::read_excel("./data/p8105_mtp_data.xlsx", range = "A9:I1230") %>
       age_group %in% c("6","7","8") ~ "6+",
       TRUE   ~ age_group)) %>% 
   rename(eop_size_group = eop_size, 
-         enlarged_eop_group = eop_visibility_classification,
          fhp_group = fhp_category) %>% 
   mutate(
       age_group = fct_relevel(age_group, "1", "2", "3", "4", "5", "6+"),
       eop_size_group = fct_relevel(eop_size_group, "0", "1", "2", "3", "4", "5"),
-      enlarged_eop_group = factor(enlarged_eop_group, levels = c("0", "1", "2")),
+      eop_visibility_classification = factor(eop_visibility_classification, levels = c("0", "1", "2")),
       fhp_group = fct_relevel(fhp_group,"0", "1", "2", "3", "4", "5","6", "7")
   )
 knitr::kable(mtp_df[0:10,])
 ```
 
  - Above is the first 10 rows of the resulting dataset. 
- - Data cleaning process: after loading the dataset, I cleaned up the variable names and converted them to lower snake cases. Then based on header information, in `sex` variable, I changed the observations of `1` and `0` to be `male` and `female` respectively, and also replaced NA with 0 in `eop_size_mm` variable. Next, I changed the observations in `age` variable to be the class of integer. Since based on the article, the ages were divided into age groups of 18–30, 31–40, 41–50, 51–60, and >61, so I combined the ages older than 60 as the group of `6+`. Moreover, for naming consistency, I renamed the `eop_size` variable to be `eop_size_group`, `fhp_category` variable to be `fhp_group`. Since "an EOP was classified as enlarged if it exceeded 10 mm and the threshold for recording the size of an EOP was set at 5mm", I renamed `eop_visibility_classification` variable to be `enlarged_eop_group` with observations 0, 1, and 2. Lastly, I ordered the factors for `age_group`,`eop_size_group`,`enlarged_eop_group`, and `fhp_group` categorical variables. \newline.
-  - The resulting mtp_df dataset contains 1221 observations of 9 variables. The size of this dataset is  (`r dim(mtp_df)`). I think the key variables are `age_group`, `enlarged_eop_group`, and `fhp_group`, because `age_group` variable categorized different ages into 5 groups of 18–30, 31–40, 41–50, 51–60, and >61, `enlarged_eop_group` represented the sizes of EOP smaller than 5mm or larger than 5mm, and `fhp_group` categorized different FHP sizes into group based on range of 10mm.
+ - Data cleaning process: after loading the dataset, I cleaned up the variable names and converted them to lower snake cases. Then based on header information, in `sex` variable, I changed the observations of `1` and `0` to be `male` and `female` respectively, and also replaced NA with 0 in `eop_size_mm` variable. Next, I changed the observations in `age` variable to be the class of integer. Since based on the article, the ages were divided into age groups of 18–30, 31–40, 41–50, 51–60, and >61, so I combined the ages older than 60 as the group of `6+`. Moreover, for naming consistency, I renamed the `eop_size` variable to be `eop_size_group`, `fhp_category` variable to be `fhp_group`. Lastly, I ordered the factors for `age_group`,`eop_size_group`,`eop_visibility_classification`, and `fhp_group` categorical variables. \newline.
+  - The resulting mtp_df dataset contains 1221 observations of 9 variables. The size of this dataset is  (`r dim(mtp_df)`). I think the key variables are `age_group`, `eop_size_group`, `eop_visibility_classification`, and `fhp_group`, because `age_group` variable categorized different ages into 5 groups of 18–30, 31–40, 41–50, 51–60, and >61, `eop_size_group` variable separated EOP sizes into 6 different groups, `eop_visibility_classification` represented the sizes of EOP smaller than 5mm or larger than 5mm, and `fhp_group` categorized different FHP sizes into group based on range of 10mm.
   
 ```{r message = FALSE}
 n_ptcp = mtp_df %>% count()
@@ -88,4 +88,101 @@ age_sex_df %>%
 ```
 
   - There are `r n_ptcp` participants included. Based on the table and the scatter plot, we can see that male and female have the similar distributions of number of observations in each age group. 
+
+2. Issues in the data: 
+```{r}
+y = as.integer(c(18, 31, 41, 51, 61))
+class(mtp_df$age)
+# age:
+mtp_df %>% 
+  ggplot(aes(x = age_group, y = age, color = age_group)) +
+  geom_point(alpha = .5) +
+  geom_hline(yintercept = c(18, 31, 41, 51, 61), linetype = 3) +
+  labs(
+    title = "Scatter Plot of Age Data",
+    x = "Age Groups",
+    y = "Ages") +
+  scale_x_discrete(
+    labels = c("<18", "18–30", "31–40", "41–50", "51–60", ">60")) +
+  scale_color_hue(
+    labels = c("<18", "18–30", "31–40", "41–50", "51–60", ">60")) +
+  annotate("text", x = 0.7, y = 18, label = "y=18", vjust = -1, size = 3) +
+  annotate("text", x = 0.7, y = 30, label = "y=31", vjust = -1, size = 3) +
+  annotate("text", x = 0.7, y = 41, label = "y=41", vjust = -1, size = 3) +
+  annotate("text", x = 0.7, y = 51, label = "y=51", vjust = -1, size = 3) +
+  annotate("text", x = 0.7, y = 61, label = "y=61", vjust = -1, size = 3)
+
+mtp_df %>% 
+  filter(age_group == 1) %>% 
+  select(age, age_group) %>% 
+  knitr::kable()
+```
+ - Based on the header information, we know that the ages are divided into 5 age groups of 18–30, 31–40, 41–50, 51–60, and >61. However, based on the above scatter plot of age data, we can see that there are 2 points were contained in the group with age smaller than 18, and there is one point with age equals to 45 was mistakenly placed in this age group. 
+
+```{r}
+#EOP sizes group
+mtp_df %>% 
+  ggplot(aes(x = eop_size_group, y = eop_size_mm, color = eop_size_group)) +
+  geom_point(alpha = .5) +
+  geom_hline(yintercept = c(5, 10, 15, 20, 25), linetype = 3) +
+  labs(
+    title = "Scatter Plot of EOP Sizes in EOP Sizes Groups",
+    x = "EOP Size Groups",
+    y = "EOP Sizes (mm)") +
+  scale_color_hue(
+    name = "EOP size group",
+    labels = c("0 = 0-5mm", "1 = 5-10mm", "2 = 10-15mm", "3 = 15-20mm", "4 = 20-25mm", "5 = 25+mm"))
+
+mtp_df %>% 
+  filter(!eop_size_group %in% c("0","1","2","3","4","5")) %>% 
+  select(eop_size_group, eop_size_mm) %>% 
+  knitr::kable()
+```
+ - Based on the above scatter plot of EOP sizes, we can see that there is one point with EOP size equals to 15 mm was mistakenly placed in an individual size group named 14.6. Also, from the graph we can see that in the size group of 5-10, 15-20, 20-25, 25+mm, there are many points were not in the size ranges that they should be classified in. 
+
+```{r}
+#eop_visibility_classification
+mtp_df %>% 
+  ggplot(aes(x = eop_visibility_classification, y = eop_size_mm, color = eop_visibility_classification)) +
+  geom_point(alpha = .5) +
+  geom_hline(yintercept = c(5), linetype = 3) +
+  labs(
+    title = "Scatter Plot of EOP Sizes in EOP Visibility Classification Groups",
+    x = "EOP Visibility Classification Groups",
+    y = "EOP Sizes (mm)") +
+  scale_color_hue(
+    name = "EOP size group",
+    labels = c("0 = 0mm", "1 = 0-5mm", "2 => 5mm"))
+```
+ - Based on the above scatter plot of EOP visibility Classification, we can see that there are many data were not in the size ranges that they should be classified in. 
+ 
+```{r}
+mtp_df %>% 
+  ggplot(aes(x = fhp_group, y = fhp_size_mm, color = fhp_group)) +
+  geom_point(alpha = .5) +
+  geom_hline(yintercept = c(10, 20, 30, 40, 50, 60, 70, 80), linetype = 3) +
+  labs(
+    title = "Scatter Plot of FHP Sizes",
+    x = "FHP Size Groups",
+    y = "FHP Sizes (mm)") +
+  scale_color_hue(
+    name = "FHP size group",
+    labels = c("0 = 0-10mm", "1 = 10-20mm", "2 = 20-30mm","3 = 30-40mm", "4 = 40-50mm", "5 = 50-60mm", "6 = 60-70mm", "7 = 70-80mm"))
+
+mtp_df %>% 
+  filter(!fhp_group %in% c("0","1","2","3","4","5", "6","7")) %>% 
+  select(fhp_group,fhp_size_mm) %>% 
+  knitr::kable()
+```
+ - Based on the above scatter plot of FHP sizes, we can see that there is one point with FHP size equals to 30.3mm was mistakenly placed in an individual size group named 30.8. Also, in the size group 1, 2, and 4, there are many points were not in the size ranges that they should be classified in. 
+
+1. `eop_shape` remove? 
+
+2. ages <18???? in Data cleaning process
+
+3. Since "an EOP was classified as enlarged if it exceeded 10 mm and the threshold for recording the size of an EOP was set at 5mm", I renamed eop_visibility_classification variable to be enlarged_eop_group with observations 0, 1, and 2.
+
+## Problem 2 – Visualization.
+
+
 
