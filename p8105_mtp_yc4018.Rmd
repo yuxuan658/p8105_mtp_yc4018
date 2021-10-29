@@ -1,0 +1,55 @@
+---
+title: "p8105_mtp_yc4018"
+author: "Yuxuan Chen"
+date: "10/28/2021"
+output: github_document
+---
+# Introduction 
+and four sections corresponding to the problems below
+
+# Problem 1 – Data.
+
+```{r}
+library(tidyverse)
+
+#set the figures' size
+knitr::opts_chunk$set(
+  fig.width = 6,
+  fig.asp = .6,
+  out.width = "90%"
+)
+
+#set the theme of all graphs
+theme_set(theme_minimal() + theme(legend.position = "bottom"))
+
+#set color of all graphs
+options(
+  ggplot2.continuous.colour = "viridis",
+  ggplot2.continuous.fill = "viridis"
+)
+
+scale_colour_discrete = scale_colour_viridis_d
+scale_fill_discrete = scale_fill_viridis_d
+```
+
+fill in missing values with data where appropriate (as indicated in the header information); create character and ordered factors for categorical variables.
+```{r}
+mtp_df = readxl::read_excel("./data/p8105_mtp_data.xlsx", range = "A9:I1230") %>%  #read the table without header information
+  janitor::clean_names() %>% 
+  mutate(
+    sex = recode(sex, `1` = "male", `0` = "female"),
+    eop_size_mm = if_else(is.na(eop_size_mm), 0, eop_size_mm), # replace NA with 0 in `eop_size_mm` variable. 
+    age = as.integer(age),
+    age_group = case_when(
+      age_group %in% c("6","7","8") ~ "6+",
+      TRUE   ~ age_group)) %>% 
+  rename(eop_size_group = eop_size, 
+         enlarged_eop_group = eop_visibility_classification,
+         fhp_group = fhp_category) %>% 
+  mutate(
+      age_group = fct_relevel(age_group, "1", "2", "3", "4", "5", "6+"),
+      eop_size_group = fct_relevel(eop_size_group, "0", "1", "2", "3", "4", "5"),
+      enlarged_eop_group = factor(enlarged_eop_group, levels = c("0", "1", "2")),
+      fhp_group = fct_relevel(fhp_group,"0", "1", "2", "3", "4", "5","6", "7")
+  )
+```
