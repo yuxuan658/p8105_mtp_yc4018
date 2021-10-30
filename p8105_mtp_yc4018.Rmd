@@ -152,6 +152,8 @@ mtp_df %>%
  - There are a lot misclassified data.
 
 ```{r}
+#FHP Sizes
+
 mtp_df %>% 
   drop_na(fhp_size_mm) %>% 
   ggplot(aes(x = fhp_group, y = fhp_size_mm, color = fhp_group)) +
