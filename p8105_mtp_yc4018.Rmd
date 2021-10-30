@@ -4,10 +4,9 @@ author: "Yuxuan Chen"
 date: "10/28/2021"
 output: github_document
 ---
+
 ## Introduction 
-
-
-## Problem 1 – Data.
+   In this project, the author correction data was used to re-analysis the relationship of how FHP size, age, and sex affect EOP size and re-conduct the hypothesis of whether cell phones are causing horn growth. By doing this to test the consistency and quality of the results in the original report. 
 
 ```{r message = FALSE}
 library(tidyverse)
@@ -26,9 +25,10 @@ scale_colour_discrete = scale_colour_viridis_d
 scale_fill_discrete = scale_fill_viridis_d
 ```
 
-1. load, clean, and tidy the mtp_df data
+## Problem 1 – Data.
 ```{r}
-# Based on the article, the ages were divided into age groups of 18–30, 31–40, 41–50, 51–60, and >61.
+# load, clean, and tidy mtp_df data
+## Based on the article, the ages were divided into age groups of 18–30, 31–40, 41–50, 51–60, and >61.
 
 mtp_df = readxl::read_excel("./data/p8105_mtp_data.xlsx", range = "A9:I1230") %>%  #read the table without header info
   janitor::clean_names() %>% 
@@ -50,12 +50,8 @@ mtp_df = readxl::read_excel("./data/p8105_mtp_data.xlsx", range = "A9:I1230") %>
 knitr::kable(mtp_df[0:10,])
 ```
 
- - After loading the dataset, I cleaned up the variable names and converted them to lower snake cases. Based on header information, I changed the observations of `1` and `0` to `male` and `female` respectively, and  replaced NA with 0 in `eop_size_mm` variable. Next I changed the observations in `age` variable to be integer and combined the ages older than 60 as the group of `6+`. I renamed the `eop_size` to `eop_size_group`, `fhp_category` to `fhp_group` for naming consistency. Lastly, I ordered the factors for `age_group`,`eop_size_group`,`eop_visibility_classification`, and `fhp_group` variables.
- 
-\newline
- - The size of the resulting dataset is  (`r dim(mtp_df)`), which contains 1221 observations of 9 variables. The key variables are `age_group`, `eop_size_group`, `eop_visibility_classification`, and `fhp_group`, because all these variables categorized data into different groups based on different criteria. 
 
-```{r message = FALSE}
+```{r message = FALSE, collapse=TRUE}
 n_ptcp = mtp_df %>% count()
 
 age_sex_df = 
@@ -84,12 +80,12 @@ age_sex_df %>%
 
 ```
 
-  - There are `r n_ptcp` participants included. Male and female have the similar distributions of number of observations in each age group.
+1. After loading the dataset, I cleaned up the variable names and converted them to lower snake cases. Based on header information, I changed the observations of `1` and `0` to `male` and `female` respectively and replaced NA with 0 in `eop_size_mm`. Next, I changed the observations in `age` to integer and combined the ages older than 60 as the group of `6+`. I renamed the `eop_size` to `eop_size_group`, `fhp_category` to `fhp_group` for naming consistency. Lastly, I ordered the factors of `age_group`,`eop_size_group`,`eop_visibility_classification`, and `fhp_group` variables.    
+ - The size of the resulting dataset is  (`r dim(mtp_df)`), which contains 1221 observations of 9 variables. The key variables are `age_group`, `eop_size_group`, `eop_visibility_classification`, and `fhp_group`, because all these variables categorized data into different groups based on different criteria. 
+ - There are `r n_ptcp` participants included. Male and female have similar distributions of the number of observations in each age group.
 
 2. Issues in the data: 
 ```{r}
-y = as.integer(c(18, 31, 41, 51, 61))
-class(mtp_df$age)
 # age:
 mtp_df %>% 
   ggplot(aes(x = age_group, y = age, color = age_group)) +
@@ -99,10 +95,9 @@ mtp_df %>%
     title = "Scatter Plot of Age Data",
     x = "Age Group (years)",
     y = "Age") +
-  scale_x_discrete(
-    labels = c("<18", "18–30", "31–40", "41–50", "51–60", ">60")) +
   scale_color_hue(
-    labels = c("<18", "18–30", "31–40", "41–50", "51–60", ">60")) +
+    name = "Age group",
+    labels = c("1 = <18 years", "2 = 18–30 years", "3 = 31–40 years", "4 = 41–50 years", "5 = 51–60 years", "6+ = >60 years")) +
   annotate("text", x = 0.7, y = 18, label = "y=18", vjust = -1, size = 3) +
   annotate("text", x = 0.7, y = 30, label = "y=31", vjust = -1, size = 3) +
   annotate("text", x = 0.7, y = 41, label = "y=41", vjust = -1, size = 3) +
@@ -115,7 +110,7 @@ mtp_df %>%
   knitr::kable()
 ```
 
- - There are 2 data placed in the <18 age group, especially one with 45 age is mistakenly placed in this age group. 
+ - There are 2 data placed in the <18 age group. One data with 45 age is misclassified into this age group. 
 
 ```{r}
 #EOP sizes group
@@ -124,7 +119,7 @@ mtp_df %>%
   geom_point(alpha = .5) +
   geom_hline(yintercept = c(5, 10, 15, 20, 25), linetype = 3) +
   labs(
-    title = "Scatter Plot of EOP Sizes in EOP Sizes Groups",
+    title = "Scatter Plot of EOP Sizes in EOP Size Groups",
     x = "EOP Size Group",
     y = "EOP Size (mm)") +
   scale_color_hue(
@@ -133,11 +128,11 @@ mtp_df %>%
 
 mtp_df %>% 
   filter(!eop_size_group %in% c("0","1","2","3","4","5")) %>% 
-  select(eop_size_group, eop_size_mm) %>% 
+  select(eop_size_mm, eop_size_group) %>% 
   knitr::kable()
 ```
  
- - There is one data with 15mm EOP size was mistakenly placed in 14.6 size group. Also there are many misclassified data in size groups of 1, 3, 4, 5.
+ - There is one data with 15mm EOP size is misclassified into in 14.6 size group. Also, there are many misclassified data in 1, 3, 4, 5 size groups.
 
 ```{r}
 #eop_visibility_classification
@@ -175,7 +170,8 @@ mtp_df %>%
   select(fhp_group,fhp_size_mm) %>% 
   knitr::kable()
 ```
- - There is one data with 30.3mm FHP size was mistakenly placed in 30.8 size group. Also there are many misclassified data in size groups 1, 2, and 4.
+
+ - There is one data with 30.3mm FHP size is misclassified into 30.8 size group. Also, there are many misclassified data in size groups 1, 2, and 4.
 
 ## Problem 2 – Visualization.
 
@@ -216,10 +212,8 @@ eeop_plot =
 FHP_plot / eeop_plot
 ```
 
- - Improved fig.3 shows the distribution of FHP data across the age groups and sexes. In the 60+ age group, both male and female have the highest FHP size. Male has higher FHP sizes than female within all age groups since the median of FHP sizes of male are higher. Both mean and sd are close to median in each age and sex group.
-
- \newline.  
- - Bottom plot shows the distribution of rate of EEOP in each age and sex group. The trends of distribution in improved fig.4 are similar to the original plot. Male has higher EEOP rate than female. 18-30 years group has the highest EEOP rate. With age increases, EEOP rate decreases and EEOP becomes unlikely to occur. After the age of 40s, EEOP rate slightly increases 
+ - Improved fig.3 shows the distribution of FHP data across the age groups and sexes. With increasing age, FHP size also increases. In the 60+ age group, both male and female have the highest FHP sizes. Male has higher FHP sizes than female within all age groups since the median of FHP sizes of the male is higher. Both mean and sd are close to the median in each age and sex group.    
+ - Bottom plot shows the distribution of the rate of EEOP in each age and sex group. The trends of distribution in improved fig.4 are similar to the original plot. Male has a higher EEOP rate than female. The 18-30 years group has the highest EEOP rate. With age increases, the EEOP rate decreases, and EEOP becomes unlikely to occur. After the age of 40s, the EEOP rate increases again.
  
 ```{r message = FALSE}
 mtp_df %>%
@@ -238,7 +232,7 @@ mtp_df %>%
     y = "EOP Size (mm)")
 ```
 
-In both sex groups, EOP size and FHP size have positive relationship in every age group. 
+ - In both sex groups, FHP size and EOP size have a positive relationship in every age group. In each age and sex group, with increasing of FHP Size will result increasing of EOP Size.
 
 ## Problem 3 – Reproducing reported results.
 
@@ -252,10 +246,12 @@ mtp_df %>%
   knitr::kable(col.names = c("Age Group", "Sample Size"))
 ```
 
-1. No. The authors’ stated sample size was: 18–30: n = 300, 31–40: n = 200, 41–50: n = 200, 51–60: n = 200, and >60: n = 300, which is different with the data I have.
+1. No, since the authors’ stated sample sizes are: 18–30: n = 300, 31–40: n = 200, 41–50: n = 200, 51–60: n = 200, and >60: n = 300, which are different with the data in the calculated table above.
 
 ```{r}
-mean(pull(mtp_df, fhp_size_mm), na.rm = TRUE) 
+# overall mean FHP
+mean(pull(mtp_df, fhp_size_mm), na.rm = TRUE)
+
 mtp_df %>% 
   group_by(sex) %>% 
   summarize(
@@ -265,17 +261,18 @@ mtp_df %>%
   knitr::kable()
 ```
 
-2. The reported overall mean FHP was 26 ±mm, for male was 28±15mm, and for female was 24±11mm, which are consistent with the data I have available.
+2. Yes, since the authors stated overall mean FHP was 26 ±mm, the male's mean FHP was 28±15mm and the female's mean FHP was 24±11mm, which is consistent with the data in the calculated table above.
 
 ```{r}
+# Because of misclassification, I used `eop_size_mm` to distinguish the size of 10mm. 
 mtp_df %>% 
   filter(
     age_group != 1,
     eop_size_group %in% c("0", "1", "2", "3", "4", "5")) %>% 
   mutate(
     eeop = case_when(
-      eop_size_group %in% c("0", "1") ~ "no",
-      eop_size_group %in% c("2", "3", "4", "5") ~ "yes",
+      eop_size_mm <= 10 ~ "no",
+      eop_size_mm > 10 ~ "yes",
       TRUE   ~ "")) %>% 
   group_by(eeop) %>% 
   summarize(n_obs = n()) %>% 
@@ -283,20 +280,32 @@ mtp_df %>%
   knitr::kable()
 ```
 
-3. EEOP is when the bony outgrowth exceeds 10mm and can be evaluated by `eop_size_mm` or `eop_size_group`. The calculated prevalence of EEOP equals 32% which is smaller than authors' finding.
+3. EEOP is named when the size of bony outgrowth exceeds 10mm, which can be evaluated by `eop_size_mm` and `eop_size_group`. The calculated prevalence of EEOP equals 32% which is smaller than the authors’ finding.
 
 ```{r}
-mtp_df %>% 
+trend_df = 
+  mtp_df %>% 
   filter(age_group != 1) %>% 
   group_by(age_group) %>% 
   count(fhp_group) %>% 
   mutate(rate = prop.table(n)) %>% 
   filter(fhp_group %in% c('4', '5', '6', '7')) %>% 
-  summarize(sum = sum(rate)) %>% 
-  knitr::kable(col.names = c("Age Group", "Frequency of FHP >40 mm"))
+  summarize(sum = sum(rate))
+
+knitr::kable(trend_df, col.names = c("Age Group", "Frequency of FHP >40 mm"))
+trend_df %>% 
+  ggplot(aes(x = age_group, y = sum, group = NA)) +
+  geom_point() +
+  geom_line() +
+  labs(
+    title = "Distribution of Frequency of FHP > 40mm",
+    x = "Age Group (years",
+    y = "Frequency of FHP > 40mm")
+
 ```
 
-4. The broad trend is consistent with my data, but my frequency of FHP>40mm in 60+ age group is 32.5%, which is smaller than the finding by author.
+4. The broad trend is consistent with my data, but my frequency of FHP>40mm in the 60+ age group is 32.5%, which is smaller than the finding by the authors.
 
 ## Problem 4 – Discussion.
- - From my calculation, increasing in age resulted increasing in FHP size, which is positively related to EOP size. Hence, the high EEOP rate in 18-30 years group do recommends a potential avenue for prevention intervention through posture improvement education in this cohort. However, there are many mistakes in data and many misclassified data in original report, which makes the quality of the results doubtful. Some calculated values, like prevalence of EEOP, are also different with authors' findings. Even though the broad trends of the original report's conclusions are consistent with mine, we cannot conclude that cell phones are causing horn growth since poor posture may not directly cause EEOP formation, and there may be other poor postures but not just using cell phones. Hence, prevalence of top poor postures and time of cell phone usage among different age groups may be helpful to address the hypothesis.
+
+ - In summary, increasing in age will result increasing in FHP size which is positively related to EOP size. The high EEOP rate in the 18-30 years group does recommend a potential avenue for prevention intervention through posture improvement education. However, there are many mistakes in data and many misclassified data in the original report, which makes the quality of the results doubtful. Some calculated values are also different from the authors' findings. Even the broad trends from the original report are consistent with mine, we cannot conclude that cell phones causes horn growth since poor postures may not directly cause EEOP formation, and there may exist other poor postures. Hence, the prevalence of top poor postures and time of cell phone usage among different age groups may be helpful to address the hypothesis.
