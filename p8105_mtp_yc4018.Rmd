@@ -132,7 +132,8 @@ mtp_df %>%
   select(eop_size_group, eop_size_mm) %>% 
   knitr::kable()
 ```
- - Based on the above scatter plot of EOP sizes, we can see that there is one point with EOP size equals to 15 mm was mistakenly placed in an individual size group named 14.6. Also, from the graph we can see that in the size group of 5-10, 15-20, 20-25, 25+mm, there are many points were not in the size ranges that they should be classified in. 
+ 
+ - There is one point with EOP size equals to 15 mm was mistakenly placed in the 14.6 size group. Also, there are a lot misclassified data in the size group of 5-10, 15-20, 20-25, 25+mm.
 
 ```{r}
 #eop_visibility_classification
@@ -148,10 +149,11 @@ mtp_df %>%
     name = "EOP size group",
     labels = c("0 = 0mm", "1 = 0-5mm", "2 => 5mm"))
 ```
- - Based on the above scatter plot of EOP visibility Classification, we can see that there are many data were not in the size ranges that they should be classified in. 
- 
+ - There are a lot misclassified data in all size groups.
+
 ```{r}
 mtp_df %>% 
+  drop_na(fhp_size_mm) %>% 
   ggplot(aes(x = fhp_group, y = fhp_size_mm, color = fhp_group)) +
   geom_point(alpha = .5) +
   geom_hline(yintercept = c(10, 20, 30, 40, 50, 60, 70, 80), linetype = 3) +
@@ -168,10 +170,10 @@ mtp_df %>%
   select(fhp_group,fhp_size_mm) %>% 
   knitr::kable()
 ```
- - Based on the above scatter plot of FHP sizes, there is one point with 30.3mm FHP size was mistakenly placed in an individual size group named 30.8. Also, there are a lot misclassified data in size group 1, 2, and 4.
+ - There is one point with 30.3mm FHP size was mistakenly placed in a 30.8 size group. Also, there are a lot misclassified data in size group 1, 2, and 4.
 
 ## Problem 2 – Visualization.
-1. FHP sizes across the age groups and sexes with the mean, sd, and the distribution of the underlying FHP data.
+
 ```{r message = FALSE}
 FHP_plot = 
   mtp_df %>% 
@@ -208,9 +210,30 @@ eeop_plot =
   scale_x_discrete(labels = c("18-30 years", "30s", "40s", "50s", ">60"))
 FHP_plot / eeop_plot
 ```
-2.
-```{r}
 
+1) Improved fig.3 shows the distribution of the underlying FHP data across the age groups and sexes. In the 60+ age group, both male and female have the highest FHP size. Comparing with female, male has the higher FHP sizes within all age groups since the median of FHP size is higher for male. The mean and sd are close and near to the median in each age and sex group. \newline.  
+   Bottom plot shows the distribution of the rate of enlarged EOP in each age and sex group. The trends of the distribution in the improved fig.4 are similar to the original version. Male has higher EEOP rate than female. The 18-30 year group has the highest EEOP rate. With age increases, EEOP rate decreases and EEOP becomes unlikely to occur. Then, EEOP rate slightly increases after the age of 50s.
+ 
+```{r}
+mtp_df %>%
+  filter(age_group != 1) %>% 
+  drop_na(fhp_size_mm) %>% 
+  ggplot(aes(x = fhp_size_mm, y = eop_size_mm, color = sex)) +
+  geom_point(alpha = 0.3) +
+  geom_smooth(method = "lm", color = "black", size = 0.5, se = FALSE) +
+  facet_grid(
+    sex ~ age_group,
+    labeller = labeller(age_group = c("2" = "18-30 years", "3" = "30s", "4" = "40s", "5" = "50s", "6+" = ">60s"))) +
+  labs(
+    title = "Distribution between FHP Size and EOP Size",
+    caption = "Association between FHP size and EOP size in each age and sex group",
+    x = "FHP Size (mm)",
+    y = "EOP Size (mm)")
 ```
+
+2) In both sex groups, EOP size and FHP size have positive relationship in every age group. 
+
+
+
 
 
