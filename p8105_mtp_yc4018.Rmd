@@ -6,7 +6,7 @@ output: github_document
 ---
 
 ## Introduction 
-   In this project, the author correction data was used to re-analysis the relationship of how FHP size, age, and sex affect EOP size and re-conduct the hypothesis of whether cell phones are causing horn growth. By doing this to test the consistency and quality of the results in the original report. 
+   In this project, the author correction data was used to re-analysis the relationship of how FHP size, age, and sex affect EOP size and re-conduct the hypothesis of whether cell phones are causing horn growth. By doing this to test the consistency and quality of the results in the original report.
 
 ```{r message = FALSE}
 library(tidyverse)
@@ -81,7 +81,7 @@ age_sex_df %>%
 ```
 
 1. After loading the dataset, I cleaned up the variable names and converted them to lower snake cases. Based on header information, I changed the observations of `1` and `0` to `male` and `female` respectively and replaced NA with 0 in `eop_size_mm`. Next, I changed the observations in `age` to integer and combined the ages older than 60 as the group of `6+`. I renamed the `eop_size` to `eop_size_group`, `fhp_category` to `fhp_group` for naming consistency. Lastly, I ordered the factors of `age_group`,`eop_size_group`,`eop_visibility_classification`, and `fhp_group` variables.    
- - The size of the resulting dataset is  (`r dim(mtp_df)`), which contains 1221 observations of 9 variables. The key variables are `age_group`, `eop_size_group`, `eop_visibility_classification`, and `fhp_group`, because all these variables categorized data into different groups based on different criteria. 
+ - The size of the resulting dataset is  (`r dim(mtp_df)`), which contains 1221 observations of 9 variables. The key variables are `age_group`, `eop_size_group`, `eop_visibility_classification`, and `fhp_group`, because all these variables categorized data into different groups based on different criteria.     
  - There are `r n_ptcp` participants included. Male and female have similar distributions of the number of observations in each age group.
 
 2. Issues in the data: 
@@ -214,7 +214,7 @@ eeop_plot =
 FHP_plot / eeop_plot
 ```
 
- - Improved fig.3 shows the distribution of FHP data across the age groups and sexes. With increasing age, FHP size also increases. In the 60+ age group, both male and female have the highest FHP sizes. Male has higher FHP sizes than female within all age groups since the median of FHP sizes of the male is higher. Both mean and sd are close to the median in each age and sex group.    
+ - Improved fig.3 shows the distribution of FHP data across the age groups and sexes. With increasing age, FHP size also increases. In the 60+ age group, both male and female have the highest FHP sizes. Male has higher FHP sizes than female within all age groups since the median of FHP sizes of the male is higher. Both mean and sd are close to the median in each age and sex group.        
  - Bottom plot shows the distribution of the rate of EEOP in each age and sex group. The trends of distribution in improved fig.4 are similar to the original plot. Male has a higher EEOP rate than female. The 18-30 years group has the highest EEOP rate. With age increases, the EEOP rate decreases, and EEOP becomes unlikely to occur. After the age of 40s, the EEOP rate increases again.
  
 ```{r message = FALSE}
@@ -234,7 +234,7 @@ mtp_df %>%
     y = "EOP Size (mm)")
 ```
 
- - In both sex groups, FHP size and EOP size have a positive relationship in every age group. In each age and sex group, with increasing of FHP Size will result increasing of EOP Size.
+ - In both sex groups, FHP size and EOP size have a positive relationship in every age group. In each age and sex group, with increasing of FHP size will result increasing of EOP size.
 
 ## Problem 3 – Reproducing reported results.
 
